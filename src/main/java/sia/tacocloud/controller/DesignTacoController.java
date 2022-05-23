@@ -3,16 +3,12 @@ package sia.tacocloud.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import sia.tacocloud.models.Ingredents;
-import sia.tacocloud.models.Ingredents.Type;
+import org.springframework.web.bind.annotation.*;
+import sia.tacocloud.models.Ingredient;
+import sia.tacocloud.models.Ingredient.Type;
 import sia.tacocloud.models.Taco;
 import sia.tacocloud.models.TacoOrder;
 
-import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.List;
@@ -26,20 +22,20 @@ import java.util.List;
 public class DesignTacoController {
     @ModelAttribute
     public void addIngredientsToModel(Model model) {
-        List<Ingredents> ingredents = Arrays.asList(
-                new Ingredents("FLTO", "Flour Tortilla", Type.SAUCE),
-                new Ingredents("COTO", "Corn Tortilla", Type.WRAP),
-                new Ingredents("GRBF", "Ground Beef", Type.PROTEIN),
-                new Ingredents("CARN", "Carnitas", Type.PROTEIN),
-                new Ingredents("TMTO", "Diced Tomatoes", Type.VEGGIES),
-                new Ingredents("LETC", "Lettuce", Type.VEGGIES),
-                new Ingredents("CHED", "Cheddar", Type.CHEESE),
-                new Ingredents("JACK", "Monterrey Jack", Type.CHEESE),
-                new Ingredents("SLSA", "Salsa", Type.SAUCE),
-                new Ingredents("SRCR", "Sour Cream", Type.SAUCE)
+        List<Ingredient> ingredents = Arrays.asList(
+                new Ingredient("FLTO", "Flour Tortilla", Type.WRAP),
+                new Ingredient("COTO", "Corn Tortilla", Type.WRAP),
+                new Ingredient("GRBF", "Ground Beef", Type.PROTEIN),
+                new Ingredient("CARN", "Carnitas", Type.PROTEIN),
+                new Ingredient("TMTO", "Diced Tomatoes", Type.VEGGIES),
+                new Ingredient("LETC", "Lettuce", Type.VEGGIES),
+                new Ingredient("CHED", "Cheddar", Type.CHEESE),
+                new Ingredient("JACK", "Monterrey Jack", Type.CHEESE),
+                new Ingredient("SLSA", "Salsa", Type.SAUCE),
+                new Ingredient("SRCR", "Sour Cream", Type.SAUCE)
         );
 
-        Type[] types = Ingredents.Type.values();
+        Type[] types = Ingredient.Type.values();
         for (Type type : types) {
             model.addAttribute(type.toString().toLowerCase(), filterByType(ingredents, type));
         }
@@ -51,6 +47,7 @@ public class DesignTacoController {
         return new TacoOrder();
     }
 
+
     @ModelAttribute(name = "taco")
     public Taco taco() {
         return new Taco();
@@ -61,13 +58,19 @@ public class DesignTacoController {
         return "design";
     }
 
-    private Iterable<Ingredents> filterByType(
-            List<Ingredents> ingredents, Type type) {
+    private Iterable<Ingredient> filterByType(
+            List<Ingredient> ingredents, Type type) {
         return ingredents
                 .stream()
                 .filter(x->x.getType().equals(type))
                 .collect(Collectors.toList());
     }
 
+    @PostMapping
+    public String processTaco(Taco taco, @ModelAttribute TacoOrder tacoOrder) {
+        tacoOrder.addTaco(taco);
+        log.info("Processing taco: {}", taco);
+        return "redirect:/orders/current";
+    }
 
 }
